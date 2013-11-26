@@ -58,6 +58,7 @@ func GetMean(a DataField, t AttrType) float64 {
 	return mean
 }
 
+// GetMedian must recieve a sorted DataField
 func GetMedian(a DataField, t AttrType) float64 {
 	var median float64
 
@@ -66,19 +67,19 @@ func GetMedian(a DataField, t AttrType) float64 {
 		n := len(a.Real)
 		if n%2 == 0 {
 			n = n / 2
-			median = (a.Real[n] + a.Real[n+1]) / 2.0
+			median = (a.Real[n-1] + a.Real[n]) / 2.0
 		} else {
 			n = n / 2
-			median = a.Real[n+1] / 2.0
+			median = a.Real[n]
 		}
 	case Integer:
 		n := len(a.Integer)
 		if n%2 == 0 {
 			n = n / 2
-			median = (a.Real[n] + a.Real[n+1]) / 2.0
+			median = float64(a.Integer[n-1]+a.Integer[n]) / 2.0
 		} else {
 			n = n / 2
-			median = a.Real[n+1] / 2.0
+			median = float64(a.Integer[n])
 		}
 	}
 
@@ -114,11 +115,11 @@ func GetPresentCount(a DataField, t AttrType) map[interface{}]int {
 			lookup[v]++
 		}
 	case Integer:
-		for _, v := range a.Real {
+		for _, v := range a.Integer {
 			lookup[v]++
 		}
 	case String:
-		for _, v := range a.Real {
+		for _, v := range a.String {
 			lookup[v]++
 		}
 	default:
@@ -167,4 +168,46 @@ func GetVariance(a DataField, t AttrType, mean float64) float64 {
 	}
 
 	return v
+}
+
+// GetQuartiles return a slice of 3 Quartiles, the input
+// a DataField must be sorted
+func GetQuartiles(a DataField, t AttrType) []float64 {
+	quartiles := make([]float64, 3, 3)
+	switch t {
+	case Real:
+		n := len(a.Real)
+		x := n / 2
+		if n%2 == 0 {
+			quartiles[1] = (a.Real[x-1] + a.Real[x]) / 2.0
+			var d DataField
+			d.Real = a.Real[0 : x+1]
+			quartiles[0] = GetMedian(d, Real)
+			d.Real = a.Real[x+1:]
+			quartiles[2] = GetMedian(d, Real)
+		} else {
+			quater := n / 4
+			quartiles[0] = (a.Real[quater-1] + a.Real[quater]) / 2.0
+			quartiles[1] = a.Real[x]
+			quartiles[2] = a.Real[x+quater]
+		}
+	case Integer:
+		n := len(a.Integer)
+		x := n / 2
+		if n%2 == 0 {
+			quartiles[1] = float64(a.Integer[x-1]+a.Integer[x]) / 2.0
+			var d DataField
+			d.Integer = a.Integer[0 : x+1]
+			quartiles[0] = GetMedian(d, Integer)
+			d.Integer = a.Integer[x+1:]
+			quartiles[2] = GetMedian(d, Integer)
+		} else {
+			quater := n / 4
+			quartiles[0] = float64(a.Integer[quater-1]+a.Integer[quater]) / 2.0
+			quartiles[1] = float64(a.Integer[x])
+			quartiles[2] = float64(a.Integer[x+quater])
+		}
+	}
+
+	return quartiles
 }

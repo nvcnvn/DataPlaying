@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>{{if .Title}}{{.Title}}{{end}}</title>
+	<meta name="description" content="toys template project - demon layout.tmpl">
+	<meta name="author" content="nguyen@open-vn.org">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="/statics/css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<link href="/statics/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="/statics/css/theme.css" rel="stylesheet">
+	<script type="text/javascript" src="/statics/js/libs/jquery-2.0.3.js"></script>
+	<script type="text/javascript" src="/statics/js/libs/bootstrap.js"></script>
+	<link rel="stylesheet" type="text/css" href="/statics/css/theme.css">
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+</head>
+<body>
+<div id="main">
+	<header>logo
+		<nav>links</nav>
+	</header>
+	<section id="content">
+	{{template "page" .}}
+	</section>
+	<footer>copyright, more links, contact info</footer>
+</div>
+</body>
+</html>

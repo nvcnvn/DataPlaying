@@ -15,7 +15,7 @@ type route struct {
 
 type context struct {
 	toys.Context
-	tmpl view.View
+	tmpl *view.View
 }
 
 func (c *context) View(page string, data interface{}) error {
@@ -28,6 +28,7 @@ func (c *context) Close() {
 
 type handler struct {
 	path           string
+	tmpl           *view.View
 	_subRoutes     []route
 	_defaultHandle func(*context)
 }
@@ -53,14 +54,16 @@ func (h *handler) newcontext(w http.ResponseWriter, r *http.Request) context {
 	c := context{}
 	c.Init(w, r)
 	c.SetPath(h.path)
+	c.tmpl = h.tmpl
 
 	return c
 }
 
 // Handler returns a http.Handler
-func Handler(path string) *handler {
+func Handler(path string, tmpl *view.View) *handler {
 	h := &handler{}
 	h.path = path
+	h.tmpl = tmpl
 	h.initSubRoutes()
 
 	return h
