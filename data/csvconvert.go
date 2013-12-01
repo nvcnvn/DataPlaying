@@ -13,31 +13,43 @@ func CSVConvert(r io.Reader) (*DataSet, error) {
 		return nil, err
 	}
 
-	numfields := len(records)
-	header := make([]Attr, 0, numfields)
+	var header []Attr
+
+	titleRow := records[0]
+	numfields := len(titleRow)
+	numRows := len(records)
+	header = make([]Attr, 0, numfields)
 	data := make([]DataField, 0, numfields)
 	sortedData := make([]DataField, 0, numfields)
 
-	for i := 0; i < numfields; i++ {
-		header = append(header, Attr{strconv.Itoa(i), Real})
+	for _, v := range titleRow {
+		header = append(header, Attr{Name: v, Type: Real})
+		data = append(data, DataField{
+			Real: make(sort.Float64Slice, numRows-1),
+		})
+		sortedData = append(sortedData, DataField{
+			Real: make(sort.Float64Slice, numRows-1),
+		})
+	}
+
+	for i := 1; i < numRows; i++ {
 		record := records[i]
 
-		field := make(sort.Float64Slice, 0, len(record))
-		for _, s := range record {
+		var (
+			idx int
+			s   string
+		)
+		for idx, s = range record {
 			f, err := strconv.ParseFloat(s, 64)
-			if err != nil {
-				field = append(field, f)
-			} else {
-				field = append(field, 0.0)
+			if err == nil {
+				data[idx].Real[i-1] = f
+				sortedData[idx].Real[i-1] = f
 			}
 		}
+	}
 
-		sortField := make(sort.Float64Slice, 0, len(record))
-		copy(field, sortField)
-		sort.Sort(sortField)
-
-		data = append(data, DataField{Real: field})
-		sortedData = append(sortedData, DataField{Real: sortField})
+	for i := 0; i < numfields; i++ {
+		sort.Sort(sortedData[i].Real)
 	}
 
 	return &DataSet{header, data, sortedData}, nil

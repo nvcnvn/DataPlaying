@@ -1,9 +1,7 @@
-#sidebar {
-	background-color: #bbd8e9;
+.col{
+	border-right: 1px solid;
+	width: 5%;
 }
-#main {
-	background-color: #dceaf4;
-}
-.block {
-	display: block;
+.title{
+	font-weight: bold;
 }
