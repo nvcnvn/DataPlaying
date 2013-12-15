@@ -39,6 +39,7 @@ type SumaryResponse struct {
 	Mode                             []interface{}
 	Name                             string
 	Lookup                           Lookup
+	Data                             []float64
 }
 
 func HandleAjax(c *context) {
@@ -55,10 +56,14 @@ func HandleAjax(c *context) {
 			set := DATASET.Data[v]
 			sortedSet := DATASET.SortedData[v]
 			var (
-				quartiles = data.GetQuartiles(sortedSet, data.Real)
+				quartiles = data.GetQuantiles(sortedSet, data.Real, 4)
 				lookupMap = data.GetPresentCount(sortedSet, data.Real)
+				mean      = data.GetMean(set, data.Real)
 				lookup    Lookup
 			)
+			log.Println(sortedSet.Real)
+			log.Println(quartiles)
+
 			lookup.Count = make([]int, 0, len(lookupMap))
 			lookup.Value = make([]interface{}, 0, len(lookupMap))
 
@@ -70,12 +75,14 @@ func HandleAjax(c *context) {
 			result = append(result, SumaryResponse{
 				Min:       sortedSet.Real[0],
 				Max:       sortedSet.Real[len(sortedSet.Real)-1],
+				Mean:      mean,
 				Name:      DATASET.Header[v].Name,
-				Median:    data.GetMedian(sortedSet, data.Real),
+				Median:    quartiles[2],
 				Mode:      data.GetMode(set, data.Real, lookupMap),
-				Variance:  data.GetVariance(set, data.Real, quartiles[1]),
+				Variance:  data.GetVariance(set, data.Real, mean),
 				Quartiles: quartiles,
 				Lookup:    lookup,
+				Data:      sortedSet.Real,
 			})
 		}
 	}

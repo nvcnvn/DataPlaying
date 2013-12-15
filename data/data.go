@@ -154,59 +154,65 @@ func GetVariance(a DataField, t AttrType, mean float64) float64 {
 
 	switch t {
 	case Real:
-		var sum float64
-		for _, v := range a.Real {
-			sum += math.Pow(v, 2)
+		n := len(a.Real)
+		if n == 1 {
+			v = 0.0
+			break
 		}
-		v = sum*0.5 - math.Pow(mean, 2)
-	case Integer:
-		var sum int
-		for _, v := range a.Integer {
+		var sum float64
+		for i := 0; i < n; i++ {
+			v := a.Real[i] - mean
 			sum += v * v
 		}
-		v = float64(sum)*0.5 - math.Pow(mean, 2)
+		v = sum / float64(n-1)
+	case Integer:
+		n := len(a.Integer)
+		if n == 1 {
+			v = 0.0
+			break
+		}
+		var sum float64
+		for i := 0; i < n; i++ {
+			v := float64(a.Integer[i]) - mean
+			sum += v * v
+		}
+		v = sum / float64(n-1)
 	}
 
 	return v
 }
 
-// GetQuartiles return a slice of 3 Quartiles, the input
+// GetQuartiles return a slice of num-Quantiles, the input
 // a DataField must be sorted
-func GetQuartiles(a DataField, t AttrType) []float64 {
-	quartiles := make([]float64, 3, 3)
+func GetQuantiles(a DataField, t AttrType, num int) []float64 {
+	quartiles := make([]float64, 0, num+1)
 	switch t {
 	case Real:
 		n := len(a.Real)
-		x := n / 2
-		if n%2 == 0 {
-			quartiles[1] = (a.Real[x-1] + a.Real[x]) / 2.0
-			var d DataField
-			d.Real = a.Real[0 : x+1]
-			quartiles[0] = GetMedian(d, Real)
-			d.Real = a.Real[x+1:]
-			quartiles[2] = GetMedian(d, Real)
-		} else {
-			quater := n / 4
-			quartiles[0] = (a.Real[quater-1] + a.Real[quater]) / 2.0
-			quartiles[1] = a.Real[x]
-			quartiles[2] = a.Real[x+quater]
+		var index float64
+		quartiles = append(quartiles, a.Real[0])
+		for i := 1; i < num; i++ {
+			index = float64(n) * float64(i) / float64(num)
+			if fIndex := math.Floor(index); index == math.Floor(index) {
+				quartiles = append(quartiles, 0.5*a.Real[int(index)-1]+0.5*a.Real[int(index)])
+			} else {
+				quartiles = append(quartiles, a.Real[int(fIndex)])
+			}
 		}
+		quartiles = append(quartiles, a.Real[len(a.Real)-1])
 	case Integer:
 		n := len(a.Integer)
-		x := n / 2
-		if n%2 == 0 {
-			quartiles[1] = float64(a.Integer[x-1]+a.Integer[x]) / 2.0
-			var d DataField
-			d.Integer = a.Integer[0 : x+1]
-			quartiles[0] = GetMedian(d, Integer)
-			d.Integer = a.Integer[x+1:]
-			quartiles[2] = GetMedian(d, Integer)
-		} else {
-			quater := n / 4
-			quartiles[0] = float64(a.Integer[quater-1]+a.Integer[quater]) / 2.0
-			quartiles[1] = float64(a.Integer[x])
-			quartiles[2] = float64(a.Integer[x+quater])
+		var index float64
+		quartiles = append(quartiles, float64(a.Integer[0]))
+		for i := 1; i < num; i++ {
+			index = float64(n) * float64(i) / float64(num)
+			if fIndex := math.Floor(index); index == fIndex {
+				quartiles = append(quartiles, 0.5*float64(a.Integer[int(index)-1])+0.5*float64(a.Integer[int(index)]))
+			} else {
+				quartiles = append(quartiles, float64(a.Integer[int(fIndex)]))
+			}
 		}
+		quartiles = append(quartiles, float64(a.Integer[len(a.Integer)-1]))
 	}
 
 	return quartiles

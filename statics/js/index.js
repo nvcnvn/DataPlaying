@@ -1,9 +1,14 @@
 $(function() {
-	$('#process').click(function(){
+	$('#btProcess').click(function(){
 		var a = [];
 		$.each($('.checkField:checked'), function(idx, item){
 			a.push(parseInt($(item).attr('data-id')));
 		});
+
+		if(a.length == 0){
+			$('#alert').append(Alert.warning('you must select one or more attrs'));
+			return;
+		}
 
 		$.ajax({
 		    type: "POST",
@@ -13,12 +18,26 @@ $(function() {
 		    dataType: "json",
 		    success: function(data){
 		    	BoxPlot(data);
-		    	Histogram(data);
+		    	Graph(data);
 		    },
 		    failure: function(errMsg) {
 		        alert(errMsg);
 		    }
 		});
+	});
+
+	$('#btHideSlected').click(function(){
+		$.each($('.checkField:checked'), function(idx, item){
+			var dataId = parseInt($(item).attr('data-id')) + 1;
+			$('#dataset th:nth-child('+dataId+')').hide();
+			$('#dataset td:nth-child('+dataId+')').hide();
+			$(item).prop('checked', false);
+		});	
+	});
+
+	$('#btShowAll').click(function(){
+		$('#dataset th').show();
+		$('#dataset td').show();
 	});
 })
 
@@ -28,9 +47,10 @@ function BoxPlot(obj) {
 
 	$.each(obj, function(idx, item){
 		categories.push(item.Name);
-		data.push([item.Min, item.Quartiles[0], item.Quartiles[1], item.Quartiles[2], item.Max]);
+		data.push([item.Min, item.Quartiles[1], item.Quartiles[2], item.Quartiles[3], item.Max]);
 	});
 
+	$('#boxplot').width($('#dataset').width());
     $('#boxplot').highcharts({
         chart: {
             type: 'boxplot'
@@ -57,11 +77,84 @@ function BoxPlot(obj) {
     });
 }
 
-function Histogram(data) {
-	$('#histogram').empty();
+function Graph(data) {
+	Histogram($('#hostogram'), data);
+	QuantilePlot($('#quantileplot'), data);
+	QQPlot($('#qqplot'), data);
+}
+
+function normal_sample() {
+	var x = 0, y = 0, rds, c;
+	do {
+		x = Math.random() * 2 - 1;
+		y = Math.random() * 2 - 1;
+		rds = x * x + y * y;
+	} while (rds == 0 || rds > 1);
+	c = Math.sqrt(-2 * Math.log(rds) / rds); // Box-Muller transform
+	return x * c; // throw away extra sample y * c
+}
+
+function QQPlot(el, data) {
+	$.each(data, function(idx, item){
+		//generate normal sample
+		var samples = [];
+		for(i = 0; i <= item.Data.length; i++){
+			samples.push(item.Mean + Math.sqrt(item.Variance)*normal_sample())
+		}
+		samples.sort();
+
+		var div = $('<div></div>', {height: 400});
+		var scatters = [];
+		for(i = 0; i <= item.Data.length; i++){
+			scatters.push([samples[i], item.Data[i]]);
+		}
+
+		$(el).append(div);
+		div.highcharts({
+            chart: {
+                type: 'scatter',
+                zoomType: 'xy'
+            },
+            series: [{
+                name: 'test',
+                color: 'rgba(223, 83, 83, .5)',
+                data: scatters
+            }]
+        });
+	});
+}
+
+function QuantilePlot(el, data) {
+	$(el).empty();
 	$.each(data, function(idx, item){
 		var div = $('<div></div>', {height: 400});
-		$('#histogram').append(div);
+		var scatters = [];
+		for(i = 0; i <= item.Data.length; i++){
+			scatters.push([i/item.Data.length, item.Data[i]]);
+		}
+
+		$(el).append(div);
+		div.highcharts({
+            chart: {
+                type: 'scatter',
+                zoomType: 'xy'
+            },
+            series: [{
+                name: 'test',
+                color: 'rgba(223, 83, 83, .5)',
+                data: scatters
+            }]
+        });
+	});
+}
+
+function Histogram(el, data) {
+	$(el).empty();
+
+	$.each(data, function(idx, item){
+		var div = $('<div></div>', {height: 400});
+		$(el).append(div);
+
 		var series = [];
 		for(var i = 0; i < item.Lookup.Value.length; i++){
 			series.push({

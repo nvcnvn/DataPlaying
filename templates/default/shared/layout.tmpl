@@ -15,6 +15,21 @@
 	<!--[if lt IE 9]>
 	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
+	<style>
+	.qq .box,
+	.qq .tick line,
+	.qq .quantile,
+	.qq .diagonal {
+		stroke: #aaa;
+		fill: none;
+	}
+	.qq .quantile {
+		stroke: #000;
+	}
+	.qq g + g .y.tick {
+		display: none;
+	}
+	</style>
 </head>
 <body>
 <div id="main">
