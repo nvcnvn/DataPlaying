@@ -5,6 +5,7 @@ import (
 	"github.com/nvcnvn/DataPlaying/data"
 	"log"
 	"net/http"
+	"path"
 )
 
 var DATASET *data.DataSet
@@ -13,8 +14,21 @@ func HandleIndex(c *context) {
 	viewdata := c.ViewData("title")
 
 	if c.Post("submit", false) == "Send" {
-		file, _, _ := c.Request.FormFile("file")
-		set, err := data.CSVConvert(file)
+		file, fHeader, err := c.Request.FormFile("file")
+		if err != nil {
+			http.Error(c, "Internal Error",
+				http.StatusInternalServerError)
+			return
+		}
+
+		var set *data.DataSet
+
+		if path.Ext(fHeader.Filename) == ".libsvm" {
+			set, err = data.LibSVMConvert(file)
+		} else {
+			set, err = data.CSVConvert(file)
+		}
+
 		if err == nil {
 			viewdata["dataset"] = set
 			DATASET = set
@@ -61,8 +75,6 @@ func HandleAjax(c *context) {
 				mean      = data.GetMean(set, data.Real)
 				lookup    Lookup
 			)
-			log.Println(sortedSet.Real)
-			log.Println(quartiles)
 
 			lookup.Count = make([]int, 0, len(lookupMap))
 			lookup.Value = make([]interface{}, 0, len(lookupMap))
