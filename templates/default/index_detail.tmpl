@@ -6,6 +6,7 @@
 	{{if .dataset}}
 	<div class="input-append">
 		<input class="btn" type="button" id="btProcess" value="Process" />
+		<input class="btn" type="button" id="btHideTable" value="Hide Table" />
 		<input class="btn" type="button" id="btHideSlected" value="Hide Selected" />
 		<input class="btn" type="button" id="btShowAll" value="Show All" />
 	</div>
@@ -36,14 +37,12 @@
 	</table>
 	<div>
 		<div id="boxplot" style="height: 400px; margin: auto;"></div>
-		<div id="hostogram" style="margin: auto; min-width: 310px;"></div>
-		<div id="quantileplot" style="margin: auto; width: 400px;"></div>
-		<div id="qqplot" style="margin: auto; width: 400px;"></div>
+		<div id="graph"></div>
 	</div>
 	{{end}}
-	<div id="qqplot"></div>
 	<script type="text/javascript" src="/statics/js/libs/highcharts.js"></script>
 	<script type="text/javascript" src="/statics/js/libs/highcharts-more.js"></script>
+	<script type="text/javascript" src="/statics/js/libs/jstat-1.0.0.min.js"></script>
 	<script type="text/javascript" src="/statics/js/alert.js"></script>
 	<script type="text/javascript" src="/statics/js/index.js"></script>
 {{end}}
