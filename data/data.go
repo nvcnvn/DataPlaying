@@ -189,27 +189,31 @@ func GetQuantiles(a DataField, t AttrType, num int) []float64 {
 	switch t {
 	case Real:
 		n := len(a.Real)
-		var index float64
 		quartiles = append(quartiles, a.Real[0])
 		for i := 1; i < num; i++ {
-			index = float64(n) * float64(i) / float64(num)
-			if fIndex := math.Floor(index); index == math.Floor(index) {
-				quartiles = append(quartiles, 0.5*a.Real[int(index)-1]+0.5*a.Real[int(index)])
+			realIndex := float64(i) / float64(num) * float64(n-1)
+			index := math.Floor(realIndex)
+			frac := realIndex - index
+			if index+1.0 < float64(n) {
+				quartiles = append(quartiles, a.Real[int(index)]*
+					(1-frac)+a.Real[int(index)+1]*frac)
 			} else {
-				quartiles = append(quartiles, a.Real[int(fIndex)])
+				quartiles = append(quartiles, a.Real[int(index)])
 			}
 		}
 		quartiles = append(quartiles, a.Real[len(a.Real)-1])
 	case Integer:
 		n := len(a.Integer)
-		var index float64
 		quartiles = append(quartiles, float64(a.Integer[0]))
 		for i := 1; i < num; i++ {
-			index = float64(n) * float64(i) / float64(num)
-			if fIndex := math.Floor(index); index == fIndex {
-				quartiles = append(quartiles, 0.5*float64(a.Integer[int(index)-1])+0.5*float64(a.Integer[int(index)]))
+			realIndex := float64(i) / float64(num) * float64(n-1)
+			index := math.Floor(realIndex)
+			frac := realIndex - index
+			if index+1.0 < float64(n) {
+				quartiles = append(quartiles, float64(a.Integer[int(index)])*
+					(1-frac)+float64(a.Integer[int(index)+1])*frac)
 			} else {
-				quartiles = append(quartiles, float64(a.Integer[int(fIndex)]))
+				quartiles = append(quartiles, float64(a.Integer[int(index)]))
 			}
 		}
 		quartiles = append(quartiles, float64(a.Integer[len(a.Integer)-1]))

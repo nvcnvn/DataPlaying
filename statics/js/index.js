@@ -12,7 +12,7 @@ $(function() {
 
 		$.ajax({
 		    type: "POST",
-		    url: "/index/ajax",
+		    url: "/ajax/summary",
 		    data: JSON.stringify(a),
 		    contentType: "application/json; charset=utf-8",
 		    dataType: "json",
@@ -49,7 +49,75 @@ $(function() {
 		}
 		$('#dataset').toggle();
 	});
-})
+
+	$('#btShowScatter').click(function(){
+		var a = [];
+		$.each($('.checkField:checked'), function(idx, item){
+			a.push(parseInt($(item).attr('data-id')));
+		});
+
+		if(a.length != 2){
+			$('#alert').append(Alert.warning('you must select 2 attrs'));
+			return;
+		}
+
+		$.ajax({
+		    type: "POST",
+		    url: "/ajax/scatter",
+		    data: JSON.stringify(a),
+		    contentType: "application/json; charset=utf-8",
+		    dataType: "json",
+		    success: function(data){
+		    	ScatterChart(data);
+		    	$('#scatterModal').modal();
+		    },
+		    failure: function(errMsg) {
+		        alert(errMsg);
+		    }
+		});
+	});
+});
+
+function ScatterChart(data) {
+	$('#scatterChart').empty();
+    $('#scatterChart').highcharts({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Height Versus Weight of 507 Individuals by Gender'
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{point.x}, {point.y}'
+                }
+            }
+        },
+        series: [{
+            name: '',
+            color: 'rgba(223, 83, 83, .5)',
+            data: data
+        }]
+    });
+}
 
 function BoxPlot(obj) {
 	var categories = [];
@@ -91,6 +159,7 @@ function Graph(data) {
 	$('#graph').empty();
 	$.each(data, function(idx, item){
 		var ul = $('<ul data-tabs="tabs" class="nav nav-tabs"></ul>');
+		ul.append($('<li></li>').append($('<a data-toggle="tab" href="#summary'+idx+'">Summary</a>')));
 		ul.append($('<li></li>').append($('<a data-toggle="tab" href="#histogram'+idx+'">Histogram</a>')));
 		ul.append($('<li></li>').append($('<a data-toggle="tab" href="#quantileplot'+idx+'">QuantilePlot</a>')));
 		ul.append($('<li></li>').append($('<a data-toggle="tab" href="#qqplot'+idx+'">QQPlot</a>')));
@@ -99,8 +168,26 @@ function Graph(data) {
 			class: 'tab-content'
 		});
 
-		var histogram = $('<div></div>', {
+		var summary = $('<div></div>', {
 			class: "tab-pane active",
+			id: 'summary'+idx
+		});
+		div.append(summary);
+		summary.append('<p>Sorted:<div style="width:100%;max-height:2em;overflow-x:scroll;">'+item.Data+'</div></p>');
+		summary.append('<p>Min:'+item.Min+'</p>');
+		summary.append('<p>Max:'+item.Max+'</p>');
+		summary.append('<p>Range:'+(item.Max-item.Min)+'</p>');
+		summary.append('<p>Mean:'+item.Mean+'</p>');
+		summary.append('<p>Mode:'+item.Mode+'</p>');
+		summary.append('<p>Median:'+item.Median+'</p>');
+		summary.append('<p>Variance:'+item.Variance+'</p>');
+		summary.append('<p>StdDev:'+ Math.sqrt(item.Variance) +'</p>');
+		summary.append('<p>Quartiles: Q1: '+item.Quartiles[1]+', Q2: ' +item.Quartiles[2]+ ', Q3: ' +item.Quartiles[3]+ '</p>');
+		summary.append('<p>Interquartiles Range:'+(item.Quartiles[3]-item.Quartiles[1])+'</p>');
+
+
+		var histogram = $('<div></div>', {
+			class: "tab-pane",
 			id: 'histogram'+idx
 		});
 		div.append(histogram);
@@ -145,14 +232,6 @@ function QQPlot(el, item) {
             data: scatters
         }]
     });
-   //  , function(chart) {
-   //  	console.log(chart)
-   //  	chart.renderer.path(['M', 0, 0, 'L', 400, 400])
-   //  	.attr({
-			// 'stroke-width': 2,
-			// stroke: 'red'
-   //      }).add();
-   //  }
 }
 
 function QuantilePlot(el, item) {
