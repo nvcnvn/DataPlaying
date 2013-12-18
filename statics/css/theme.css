@@ -5,6 +5,7 @@
 .title{
 	font-weight: bold;
 }
-#scatterChart {
-	margin: 10px;
+.scatterChart {
+	width: 400px;
+	height: 400px;
 }

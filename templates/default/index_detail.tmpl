@@ -9,6 +9,7 @@
 		<input class="btn" type="button" id="btHideTable" value="Hide Table" />
 		<input class="btn" type="button" id="btHideSlected" value="Hide Selected" />
 		<input class="btn" type="button" id="btShowScatter" value="Visualize" />
+		<input class="btn" type="button" id="btShowQQ" value="View Q-Q Plot" />
 		<input class="btn" type="button" id="btShowAll" value="Show All" />
 	</div>
 	<div id="alert">
@@ -36,14 +37,31 @@
 		</tr>
 		{{end}}
 	</table>
+	<table id="scatterTable" class="hide">
+		<tr>
+			<td>
+				<div class="scatterChart" id="scatterChart0"></div>
+			</td>
+			<td>
+				<div class="scatterChart" id="scatterChart1"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="scatterChart" id="scatterChart2"></div>
+			</td>
+			<td>
+				<div class="scatterChart" id="scatterChart3"></div>
+			</td>
+		</tr>
+	</table>
 	<!-- Modal -->
-	<div id="scatterModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="scatterModalLabel" aria-hidden="true">
+	<div id="qqModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="qqModalLabel" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="scatterModalLabel">Modal header</h3>
+			<h3 id="qqModalLabel">Modal header</h3>
 		</div>
-		<div class="modal-body">
-			<div id="scatterChart"></div>
+		<div id="qqChart" class="modal-body">
 		</div>
 		<div class="modal-footer">
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>

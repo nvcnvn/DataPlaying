@@ -63,13 +63,40 @@ $(function() {
 
 		$.ajax({
 		    type: "POST",
-		    url: "/ajax/scatter",
+		    url: "/ajax/data",
 		    data: JSON.stringify(a),
 		    contentType: "application/json; charset=utf-8",
 		    dataType: "json",
 		    success: function(data){
 		    	ScatterChart(data);
-		    	$('#scatterModal').modal();
+		    },
+		    failure: function(errMsg) {
+		        alert(errMsg);
+		    }
+		});
+	});
+
+	$('#btShowQQ').click(function(){
+		var a = [];
+		$.each($('.checkField:checked'), function(idx, item){
+			a.push(parseInt($(item).attr('data-id')));
+		});
+
+		if(a.length != 2){
+			$('#alert').append(Alert.warning('you must select 2 attrs'));
+			return;
+		}
+
+		$.ajax({
+		    type: "POST",
+		    url: "/ajax/sorteddata",
+		    data: JSON.stringify(a),
+		    contentType: "application/json; charset=utf-8",
+		    dataType: "json",
+		    success: function(data){
+		    	$('#qqModal').modal();
+		    	$('#qqChart').empty();
+		    	drawQQPlot($('#qqChart'), data[0].Data, data[1].Data);
 		    },
 		    failure: function(errMsg) {
 		        alert(errMsg);
@@ -78,15 +105,35 @@ $(function() {
 	});
 });
 
-function ScatterChart(data) {
-	$('#scatterChart').empty();
-    $('#scatterChart').highcharts({
+
+function drawScatter(el, a, b) {
+	el.empty();
+	var scatters = [];
+	for(i = 0; i<a.Data.length; i++){
+		scatters.push([a.Data[i], b.Data[i]]);
+	}
+
+    el.highcharts({
         chart: {
             type: 'scatter',
             zoomType: 'xy'
         },
         title: {
-            text: 'Height Versus Weight of 507 Individuals by Gender'
+            text: a.Name+' Versus '+b.Name
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: a.Name
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: b.Name
+            }
         },
         plotOptions: {
             scatter: {
@@ -114,9 +161,19 @@ function ScatterChart(data) {
         series: [{
             name: '',
             color: 'rgba(223, 83, 83, .5)',
-            data: data
+            data: scatters
         }]
     });
+}
+
+function ScatterChart(data) {
+	var a = data[0];
+	var b = data[1];
+	drawScatter($('#scatterChart0'), a, b);
+	drawScatter($('#scatterChart1'), b, b);
+	drawScatter($('#scatterChart2'), a, a);
+	drawScatter($('#scatterChart3'), b, a);
+	$('#scatterTable').show();
 }
 
 function BoxPlot(obj) {
@@ -209,15 +266,11 @@ function Graph(data) {
 	});
 }
 
-function QQPlot(el, item) {
-	//generate normal sample
-	var samples = jstat.seq(-3, 3, item.Data.length);
-	samples.sort();
-
+function drawQQPlot(el, a, b) {
 	var div = $('<div></div>', {height: 400, width: 400});
 	var scatters = [];
-	for(i = 0; i <= item.Data.length; i++){
-		scatters.push([samples[i], item.Data[i]]);
+	for(i = 0; i <= a.length; i++){
+		scatters.push([a[i], b[i]]);
 	}
 
 	$(el).append(div);
@@ -232,6 +285,14 @@ function QQPlot(el, item) {
             data: scatters
         }]
     });
+}
+
+function QQPlot(el, item) {
+	//generate normal sample
+	var samples = jstat.seq(-3, 3, item.Data.length);
+	samples.sort();
+
+	drawQQPlot(el, samples, item.Data);
 }
 
 function QuantilePlot(el, item) {

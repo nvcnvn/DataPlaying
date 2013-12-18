@@ -5,6 +5,7 @@ func (h *handler) initSubRoutes() {
 	h._subRoutes = []route{
 		route{pattern: "index", fn: HandleIndex},
 		route{pattern: "ajax/summary", fn: HandleAjaxSummary},
-		route{pattern: "ajax/scatter", fn: HandleAjaxScatter},
+		route{pattern: "ajax/data", fn: HandleAjaxData},
+		route{pattern: "ajax/sorteddata", fn: HandleAjaxSortedData},
 	}
 }
