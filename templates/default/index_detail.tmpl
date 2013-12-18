@@ -12,6 +12,11 @@
 		<input class="btn" type="button" id="btShowQQ" value="View Q-Q Plot" />
 		<input class="btn" type="button" id="btShowAll" value="Show All" />
 	</div>
+	<hr>
+	<div class="input-append">
+		<input id="numCluster" type="number">
+		<input class="btn" type="button" id="btClustering" value="Clustering" />
+	</div>
 	<div id="alert">
 	</div>
 	<table id="dataset" class="table table-striped table-bordered table-hover">
@@ -24,6 +29,7 @@
 				</label>
 			</th>
 		{{end}}
+			<th class="colCluster">Cluster</th>
 		</tr>
 		{{$firstset := index .dataset.Data 0}}
 		{{$data := .dataset.Data}}
@@ -34,6 +40,7 @@
 				{{index $set.Real $idx}}
 			</td>
 			{{end}}
+			<td class="colCluster" style="color:red" id='tdCluster{{$idx}}'></td>
 		</tr>
 		{{end}}
 	</table>

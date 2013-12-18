@@ -76,6 +76,37 @@ $(function() {
 		});
 	});
 
+	$('.colCluster').hide();
+	$('#btClustering').click(function(){
+		var a = [];
+		$.each($('.checkField:checked'), function(idx, item){
+			a.push(parseInt($(item).attr('data-id')));
+		});
+
+		if(a.length < 2){
+			$('#alert').append(Alert.warning('you must select 2 attrs'));
+			return;
+		}
+		$.ajax({
+		    type: "POST",
+		    url: "/ajax/clustering",
+		    data: JSON.stringify({K: parseInt($('#numCluster').val()), Fields: a}),
+		    contentType: "application/json; charset=utf-8",
+		    dataType: "json",
+		    success: function(data){
+		    	for(i=0;i<data.length;i++){
+		    		for(j=0;j<data[i].length;j++){
+		    			$('#tdCluster'+data[i][j]).text(i+1);
+		    		}
+		    	}
+		    	$('.colCluster').show();
+		    },
+		    failure: function(errMsg) {
+		        alert(errMsg);
+		    }
+		});
+	});
+
 	$('#btShowQQ').click(function(){
 		var a = [];
 		$.each($('.checkField:checked'), function(idx, item){

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"errors"
 	"math"
 	"sort"
 )
@@ -33,6 +34,101 @@ type DataSet struct {
 	Header     []Attr
 	Data       []DataField
 	SortedData []DataField
+}
+
+// Clustering with K-means
+func Clustering(k int, t AttrType, a ...DataField) ([][]int, error) {
+	// just implement for Real data
+	rows := len(a[0].Real)
+	if k > rows {
+		return nil, errors.New("k bigger than number of records")
+	}
+
+	nAttrs := len(a)
+	//select k centroids, not smart way...just fast
+	centroids := make([][]float64, k) // centroids vector
+	r := rows / k
+	for i := 0; i < k; i++ {
+		v := make([]float64, 0, nAttrs)
+		for _, f := range a {
+			v = append(v, f.Real[i*r])
+		}
+		centroids[i] = v
+	}
+
+	// run until the centroids has no change
+	for {
+		mCluster := make([][]int, k) // cluster lookup map
+		for i := 0; i < k; i++ {
+			mCluster[i] = make([]int, 0, r)
+		}
+
+		record := make([]float64, nAttrs)
+		// choose a cluster for a record
+		for i := 0; i < rows; i++ {
+			for j := 0; j < nAttrs; j++ {
+				record[j] = a[j].Real[i]
+			}
+
+			// get the first distance
+			var currentK int
+			var dist, tmpDist float64
+			var tmp float64
+			for j := 0; j < nAttrs; j++ {
+				x := record[j] - centroids[0][j]
+				tmp += x * x
+			}
+
+			dist = math.Sqrt(tmp)
+
+			for t := 1; t < k; t++ {
+				tmp = 0.0
+				for j := 0; j < nAttrs; j++ {
+					x := record[j] - centroids[t][j]
+					tmp += x * x
+				}
+				tmpDist = math.Sqrt(tmp)
+				if tmpDist < dist {
+					currentK = t
+					dist = tmpDist
+				}
+			}
+			// now record i in cluster currentK
+			mCluster[currentK] = append(mCluster[currentK], i)
+		}
+		// re-calculate centroids
+		tmpCentroids := make([][]float64, k)
+		for i := 0; i < k; i++ {
+			tmpCentroids[i] = make([]float64, nAttrs)
+			for j := 0; j < nAttrs; j++ {
+				var x float64
+				for _, v := range mCluster[i] {
+					x += a[j].Real[v]
+				}
+				if len(mCluster[i]) > 0 {
+					tmpCentroids[i][j] = x / float64(len(mCluster[i]))
+				}
+			}
+		}
+		// compare just calculated and the old centroids
+		var hasDiff bool
+		for i := 0; i < k; i++ {
+			for j := 0; j < nAttrs; j++ {
+				if centroids[i][j] != tmpCentroids[i][j] {
+					hasDiff = true
+					break
+				}
+			}
+		}
+
+		if hasDiff {
+			centroids = tmpCentroids
+		} else {
+			return mCluster, nil
+		}
+	}
+
+	return nil, errors.New("Program error")
 }
 
 func GetMean(a DataField, t AttrType) float64 {
